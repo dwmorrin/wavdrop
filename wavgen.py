@@ -1,19 +1,27 @@
 """ generate .wav file containing test tone """
-from array import array
 from math import floor, pi, sin, asin, tan, atan
 from struct import pack
+import argparse
 import wave
 
-max_value = 32760
+parser = argparse.ArgumentParser(
+        description="Generate .wav file using direct digital synthesis")
+parser.add_argument('-o', '--output', help="output filename",
+        dest='filename', default="tone.wav", action='store')
+parser.add_argument('-r', '--rate', help="sample rate",
+        dest='sample_rate', type=int, default=44100, action='store')
+args = parser.parse_args()
+
+MAX_VALUE = 32767
 
 def byte16(int):
     """ formats signed 16 bit int to 2x 8 bits """
-    if int > max_value or int < -max_value:
+    if int > MAX_VALUE or int < -MAX_VALUE:
         raise ValueError
     return pack("<h", int)
 
 def scale(x, amplitude=0.5, master=0.8):
-    return round(x * max_value * amplitude * master)
+    return round(x * MAX_VALUE * amplitude * master)
 
 def saw(x):
     return (2/pi) * atan(tan(x))
@@ -50,11 +58,10 @@ def write_samples(wav_write, sample_rate, frequency, duration, func=sin, fade_in
             amplitude -= fade_out_dec
         wav_file.writeframesraw(byte16(scale(func(sample*angle_rate), amplitude)))
 
-sample_rate = 44100 # Hz
-wav_file = wave.open("tone.wav", "wb")
+wav_file = wave.open(args.filename, "wb")
 wav_file.setnchannels(1)
 wav_file.setsampwidth(2)
-wav_file.setframerate(sample_rate)
+wav_file.setframerate(args.sample_rate)
 semitone_ratio = 2**(1/12)
 skip = [1, 3, 6, 8, 10]
 for x in range(2):
@@ -71,5 +78,5 @@ for x in range(2):
     for i in range(13):
         f *= semitone_ratio
         if i not in skip:
-            write_samples(wav_file, sample_rate, f, 1, func)
+            write_samples(wav_file, args.sample_rate, f, 1, func)
 wav_file.close()
