@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """ randomly zero out samples in a .wav file """
 from random import sample
 import argparse
@@ -25,11 +26,12 @@ def time_of_sample(sample_rate, sample):
     return float(sample)/float(sample_rate)
 
 drops = sample(range(wav_params.nframes - args.drop_width), args.ndrops)
+drops.sort()
 print("Dropping at the following times [seconds]:")
 for n in drops:
     for i in range(args.drop_width):
         data[n + i] = 0
-    print("\t{0:.3f} s".format(time_of_sample(wav_params.framerate, n)))
+    print("\t{0:7.3f} s".format(time_of_sample(wav_params.framerate, n)))
 
 # write output file
 wav_write = wave.open(args.filename, 'wb')

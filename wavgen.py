@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """ generate .wav file containing test tone """
 from math import floor, pi, sin, asin, tan, atan
 from struct import pack
@@ -10,6 +11,8 @@ parser.add_argument('-o', '--output', help="output filename",
         dest='filename', default="tone.wav", action='store')
 parser.add_argument('-r', '--rate', help="sample rate",
         dest='sample_rate', type=int, default=44100, action='store')
+parser.add_argument('-f', '--frequency', help="audio frequency",
+        dest='frequency', type=int, default=440, action='store')
 args = parser.parse_args()
 
 MAX_VALUE = 32767
@@ -65,7 +68,7 @@ wav_file.setframerate(args.sample_rate)
 semitone_ratio = 2**(1/12)
 skip = [1, 3, 6, 8, 10]
 for x in range(2):
-    f = 440
+    f = args.frequency
     func = sin
     #if x < 2:
     #    func = sin
