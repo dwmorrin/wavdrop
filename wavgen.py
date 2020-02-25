@@ -13,6 +13,8 @@ parser.add_argument('-r', '--rate', help="sample rate",
         dest='sample_rate', type=int, default=44100, action='store')
 parser.add_argument('-f', '--frequency', help="audio frequency",
         dest='frequency', type=int, default=440, action='store')
+parser.add_argument('-w', '--waveform', help="sin|tri|saw|square",
+        dest='waveform', default='sin', action='store')
 args = parser.parse_args()
 
 MAX_VALUE = 32767
@@ -61,25 +63,21 @@ def write_samples(wav_write, sample_rate, frequency, duration, func=sin, fade_in
             amplitude -= fade_out_dec
         wav_file.writeframesraw(byte16(scale(func(sample*angle_rate), amplitude)))
 
+def ionian(wav_write, loops, start_freq, note_duration):
+    """ play an ionian (major) scale """
+    semitone_ratio = 2**(1/12)
+    skip = [1, 3, 6, 8, 10] # black keys
+    for x in range(loops):
+        f = start_freq
+        for i in range(13):
+            f *= semitone_ratio
+            if i not in skip:
+                write_samples(wav_write, args.sample_rate, f, note_duration, globals()[args.waveform])
+
+
 wav_file = wave.open(args.filename, "wb")
 wav_file.setnchannels(1)
 wav_file.setsampwidth(2)
 wav_file.setframerate(args.sample_rate)
-semitone_ratio = 2**(1/12)
-skip = [1, 3, 6, 8, 10]
-for x in range(2):
-    f = args.frequency
-    func = sin
-    #if x < 2:
-    #    func = sin
-    #elif x < 8:
-    #    funx = tri
-    #elif x < 12:
-    #    func = saw
-    #else:
-    #    func = square
-    for i in range(13):
-        f *= semitone_ratio
-        if i not in skip:
-            write_samples(wav_file, args.sample_rate, f, 1, func)
+ionian(wav_file, 2, args.frequency, 0.5)
 wav_file.close()
