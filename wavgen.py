@@ -46,7 +46,13 @@ sample      sample_rate samples             second        cycle
 def rads_per_sample(frequency, sample_rate):
     return frequency * 2 * pi / sample_rate
 
-def write_samples(wav_write, sample_rate, frequency, duration, func=sin, fade_in_duration=0.01, fade_out_duration=0.01):
+def write_samples(wav_write, value_list):
+    """ write samples from a list """
+    for sample in value_list:
+        wav_write.writeframesraw(byte16(sample))
+
+def write_waveform(wav_write, sample_rate, frequency, duration, func=sin, fade_in_duration=0.01, fade_out_duration=0.01):
+    """ writes the given function at a fixed frequency with fade in/out """
     n_samples = int(sample_rate * duration)
     n_fade_in_end = int(sample_rate * fade_in_duration)
     n_fade_out_samples = int(sample_rate * fade_out_duration)
@@ -56,12 +62,14 @@ def write_samples(wav_write, sample_rate, frequency, duration, func=sin, fade_in
     amplitude = 0.0
     fade_in_inc = 1/float(n_fade_in_end)
     fade_out_dec = 1/float(n_fade_out_samples)
+    samples = []
     for sample in range(n_samples):
         if sample <= n_fade_in_end:
             amplitude += fade_in_inc
         if sample >= n_fade_out_start:
             amplitude -= fade_out_dec
-        wav_file.writeframesraw(byte16(scale(func(sample*angle_rate), amplitude)))
+        samples.append(scale(func(sample*angle_rate), amplitude))
+    write_samples(wav_write, samples)
 
 def ionian(wav_write, loops, start_freq, note_duration):
     """ play an ionian (major) scale """
@@ -72,8 +80,7 @@ def ionian(wav_write, loops, start_freq, note_duration):
         for i in range(13):
             f *= semitone_ratio
             if i not in skip:
-                write_samples(wav_write, args.sample_rate, f, note_duration, globals()[args.waveform])
-
+                write_waveform(wav_write, args.sample_rate, f, note_duration, globals()[args.waveform])
 
 wav_file = wave.open(args.filename, "wb")
 wav_file.setnchannels(1)
