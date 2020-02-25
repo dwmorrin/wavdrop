@@ -21,7 +21,6 @@ wav_params = wav_read.getparams()
 data = bytearray(wav_read.readframes(wav_params.nframes))
 wav_read.close()
 
-# TODO this printed 7.163, in Audacity was around 6.738
 def time_of_sample(sample_rate, sample):
     return float(sample)/float(sample_rate)
 
@@ -29,8 +28,10 @@ drops = sample(range(wav_params.nframes - args.drop_width), args.ndrops)
 drops.sort()
 print("Dropping at the following times [seconds]:")
 for n in drops:
+    start_index = wav_params.sampwidth * n
     for i in range(args.drop_width):
-        data[n + i] = 0
+        for j in range(wav_params.sampwidth):
+            data[start_index + i + j] = 0
     print("\t{0:7.3f} s".format(time_of_sample(wav_params.framerate, n)))
 
 # write output file
