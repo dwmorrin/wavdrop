@@ -7,14 +7,18 @@ import wave
 
 parser = argparse.ArgumentParser(
         description="Generate .wav file using direct digital synthesis")
+parser.add_argument('-d', '--duration', help="duration of tone",
+        dest='duration', type=float, default=1, action='store')
+parser.add_argument('-f', '--frequency', help="audio frequency",
+        dest='frequency', type=int, default=440, action='store')
 parser.add_argument('-o', '--output', help="output filename",
         dest='filename', default="tone.wav", action='store')
 parser.add_argument('-r', '--rate', help="sample rate",
         dest='sample_rate', type=int, default=44100, action='store')
-parser.add_argument('-f', '--frequency', help="audio frequency",
-        dest='frequency', type=int, default=440, action='store')
 parser.add_argument('-w', '--waveform', help="sin|tri|saw|square",
         dest='waveform', default='sin', action='store')
+parser.add_argument('-t', '--type', help="tone|constant|scale|slope",
+        dest='type', default='tone', action='store')
 args = parser.parse_args()
 
 MAX_VALUE = 32767
@@ -82,9 +86,25 @@ def ionian(wav_write, loops, start_freq, note_duration):
             if i not in skip:
                 write_waveform(wav_write, args.sample_rate, f, note_duration, globals()[args.waveform])
 
+def slope(wav_write, start, stop, n_samples):
+    """ generates a series of samples with constant slope """
+    inc = (stop - start) // n_samples
+    write_samples(wav_write, range(start, stop, inc))
+
 wav_file = wave.open(args.filename, "wb")
 wav_file.setnchannels(1)
 wav_file.setsampwidth(2)
 wav_file.setframerate(args.sample_rate)
-ionian(wav_file, 2, args.frequency, 0.5)
+
+if args.type == 'tone':
+    write_waveform(wav_file, args.sample_rate, args.frequency, args.duration,
+            globals()[args.waveform])
+elif args.type == 'constant':
+    write_samples(wav_file,
+            [MAX_VALUE for i in range(int(args.sample_rate * args.duration))])
+elif args.type == 'slope':
+    slope(wav_file, -MAX_VALUE, MAX_VALUE, 10)
+elif args.type == 'scale':
+    ionian(wav_file, 2, args.frequency, 0.5)
+
 wav_file.close()
