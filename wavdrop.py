@@ -21,6 +21,7 @@ wav_params = wav_read.getparams()
 data = bytearray(wav_read.readframes(wav_params.nframes))
 wav_read.close()
 
+# pick random times to drop samples, print times to stdout, and apply to data
 def time_of_sample(sample_rate, sample):
     return float(sample)/float(sample_rate)
 
