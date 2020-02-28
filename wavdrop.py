@@ -7,11 +7,11 @@ import wave
 parser = argparse.ArgumentParser(
         description="Randomly zero out samples in a .wav file")
 parser.add_argument('-o', '--output', help="output filename",
-        dest='filename', default="bad.wav", action='store')
+        dest='filename', default="bad.wav")
 parser.add_argument('-n', '--drops', help="number of dropped samples",
-        dest='ndrops', type=int, default=10, action='store')
+        dest='ndrops', type=int, default=10)
 parser.add_argument('-w', '--width', help="width of dropped samples",
-        dest='drop_width', type=int, default=3, action='store')
+        dest='drop_width', type=int, default=3)
 parser.add_argument('input_file')
 args = parser.parse_args()
 
