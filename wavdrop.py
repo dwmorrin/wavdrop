@@ -28,11 +28,13 @@ def time_of_sample(sample_rate, sample):
 drops = sample(range(wav_params.nframes - args.drop_width), args.ndrops)
 drops.sort()
 print("Dropping at the following times [seconds]:")
+FRAME_SIZE = wav_params.nchannels * wav_params.sampwidth
 for n in drops:
-    start_index = wav_params.sampwidth * n
+    start_index = FRAME_SIZE * n
     for i in range(args.drop_width):
-        for j in range(wav_params.sampwidth):
-            data[start_index + i + j] = 0
+        for j in range(wav_params.nchannels):
+            for k in range(wav_params.sampwidth):
+                data[start_index + i*FRAME_SIZE + j*wav_params.sampwidth + k] = 0
     print("\t{0:7.3f} s".format(time_of_sample(wav_params.framerate, n)))
 
 # write output file
